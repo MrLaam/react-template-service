@@ -1,0 +1,71 @@
+service: trash
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  region: eu-west-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "cognito-identity:*"
+        - "cognito-idp:*"
+        - "lambda:InvokeFunction"
+      Resource: "*"
+  environment:
+    MONGO_USERNAME: ${file(./config.${opt:stage, 'dev'}.json):MONGO_USERNAME}
+    MONGO_PASSWORD: ${file(./config.${opt:stage, 'dev'}.json):MONGO_PASSWORD}
+    MONGO_ADDRESS: ${file(./config.${opt:stage, 'dev'}.json):MONGO_ADDRESS}
+
+functions:
+  getStuff:
+    handler: functions/getStuff/getStuff.getStuff
+    name: Trash-Service-getStuff
+    package:
+      include:
+        - functions/getStuff/**
+    events:
+      - http:
+          path: /{stuffId}
+          method: get
+          # authorizer:
+          #   type: COGNITO_USER_POOLS
+          #   authorizerId:
+          #     Ref: ApiGatewayAuthorizer
+          cors: true
+          request:
+            parameters:
+              paths:
+                stuffId: true
+  getPosts:
+    handler: functions/getPosts/getPosts.getPosts
+    name: Trash-Service-getPosts
+    package:
+      include:
+        - functions/getPosts/**
+    events:
+      - http:
+          path: /posts
+          method: get
+          # authorizer:
+          #   type: COGNITO_USER_POOLS
+          #   authorizerId:
+          #     Ref: ApiGatewayAuthorizer
+          cors: true
+  
+
+resources:
+  Resources:
+    # For authorizing endpoints with cognito
+    ApiGatewayAuthorizer:
+      DependsOn:
+        - ApiGatewayRestApi
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: cognito_auth
+        RestApiId: { "Ref": "ApiGatewayRestApi" }
+        IdentitySource: method.request.header.Authorization
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - arn:aws:cognito-idp:eu-west-1:837739054717:userpool/eu-west-1_6P90wr5k1
