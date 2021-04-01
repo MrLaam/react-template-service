@@ -9,9 +9,11 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
-        - "cognito-identity:*"
-        - "cognito-idp:*"
-        - "lambda:InvokeFunction"
+       - "lambda:InvokeFunction"
+       - "cognito-identity:"
+       - "cognito-idp:"
+       - "cognito-sync:*"
+       - "cognito-identity:ListIdentityPools"
       Resource: "*"
   environment:
     MONGO_USERNAME: ${file(./config.${opt:stage, 'dev'}.json):MONGO_USERNAME}
@@ -19,6 +21,13 @@ provider:
     MONGO_ADDRESS: ${file(./config.${opt:stage, 'dev'}.json):MONGO_ADDRESS}
 
 functions:
+  initUser:
+    handler: functions/initUser/initUser.initUser
+    events:
+      - cognitoUserPool:
+          existing: true
+          pool: trash-users
+          trigger: PostConfirmation
   getStuff:
     handler: functions/getStuff/getStuff.getStuff
     name: Trash-Service-getStuff
@@ -48,10 +57,10 @@ functions:
       - http:
           path: /posts
           method: get
-          # authorizer:
-          #   type: COGNITO_USER_POOLS
-          #   authorizerId:
-          #     Ref: ApiGatewayAuthorizer
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
           cors: true
   
 
@@ -68,4 +77,4 @@ resources:
         IdentitySource: method.request.header.Authorization
         Type: COGNITO_USER_POOLS
         ProviderARNs:
-          - arn:aws:cognito-idp:eu-west-1:837739054717:userpool/eu-west-1_6P90wr5k1
+          - arn:aws:cognito-idp:eu-west-1:283171187809:userpool/eu-west-1_nKifUkPwq
