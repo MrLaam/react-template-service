@@ -38,15 +38,21 @@ module.exports.getPosts = async (event, context) => {
     console.log(res);
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       body: JSON.stringify(res),
     };
   } catch (err) {
     console.log(err);
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       body: JSON.stringify(err),
     };
-  } finally {
-    client.close();
   }
 };

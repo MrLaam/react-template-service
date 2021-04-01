@@ -1,7 +1,7 @@
 'use strict';
 const MongoClient = require('mongodb').MongoClient;
 //TODO: Don't forget to set ElasticIp otherwise this address will keep changing
-const url = 'mongodb://root:Mxj4bu7WMQCI@ec2-3-248-190-6.eu-west-1.compute.amazonaws.com';
+const url = 'mongodb://root:syLbxj4leVHu@ec2-34-252-111-200.eu-west-1.compute.amazonaws.com';
 const dbName = 'trashAppDB';
 const collectionName = 'users';
 
@@ -33,15 +33,21 @@ module.exports.getStuff = async (event, context) => {
       console.log(res);
       return {
         statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         body: JSON.stringify("done!")
       };
   } catch (err) {
       console.log(err);
       return {
         statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         body: JSON.stringify(err)
       };
-  } finally {
-      client.close();
   }
 };
